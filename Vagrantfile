@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: [ "Vagrantfile", ".git/", ".DS_Store" ]
+  config.vm.synced_folder "./post_install", "/vagrant/post_install", type: "rsync", rsync__exclude: [ ".git/", ".DS_Store" ]
   
   # config.vm.synced_folder "../data", "/vagrant_data"
 
@@ -52,6 +52,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       sl.local_disk                = true
       
       sl.network_speed             = 100
+      
+      sl.post_install              = "https://raw.githubusercontent.com/lonniev/softlayer-windows-jazzclm/master/post_install/windows/post_install.ps1"
 
       #sl.hourly_billing            = true
       #sl.dedicated                 = false
