@@ -16,14 +16,13 @@ $user.SetInfo()
 net localgroup Administrators /add "vagrant"
 
 # configure WinRM
-winrm quickconfig
+Set-WSManQuickConfig -Force
 
 Set-Item WSMAN:\LocalHost\MaxTimeoutms -Value "1800000"
 Set-Item WSMAN:\LocalHost\Client\AllowUnencrypted -Value $true
 Set-Item WSMAN:\LocalHost\Client\Auth\Basic -Value $true
 
 Set-Service WinRM -startuptype "automatic"
-Start-Service WinRM
 
 # obtain a sshd server for windows
 md c:\tmp
