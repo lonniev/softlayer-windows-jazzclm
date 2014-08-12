@@ -50,11 +50,11 @@ iwr http://dl.bitvise.com/BvSshServer-Inst.exe -OutFile c:\tmp\BvSshServer-Inst.
 C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite
 
 # configure it to sync with users' authorized_keys files
-$settings = @'
+$cmds = @'
 access.authKeysSync true                                                                                                            
 commit
 '@
-$settings | "C:\Program Files\Bitvise SSH Server\BssCfg.exe" settings importText -i
+echo $cmds | "C:\Program Files\Bitvise SSH Server\BssCfg.exe" settings importText -i
 
 # obtain an rsync and chmod client for windows
 # load the assembly required
