@@ -76,3 +76,5 @@ c:\DeltaCopy\chmod 0600 $vssh\authorized_keys
 $owner = new-object system.security.principal.ntaccount("vagrant")
 get-childitem -literalpath $vssh -force -recurse | Get-Acl | foreach-object { $_.setOwner($owner) }
 
+# schedule a restart of the instance
+#shutdown /r /t 10 /c "server reboot to complete vagrant post_install" /d p:2:4
