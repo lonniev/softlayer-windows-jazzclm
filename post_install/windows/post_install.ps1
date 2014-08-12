@@ -2,9 +2,14 @@
 $computer = [ADSI]"WinNT://localhost"
 
 # create the vagrant user with password vagrant
-$user = $computer.Create("User","vagrant")
-$user.setpassword("vagrant")
+$userName = "vagrant"
+$userHome = "c:\users\" + $userName
+md $userHome
+$user = $computer.Create("User",$userName )
+$user.setpassword( $userName )
 $user.put("description", "Vagrant User")
+$user.put("homedirectory", $userHome)
+$user.put("profile", $userHome)
 $user.SetInfo()
 
 # ADS_UF_DONT_EXPIRE_PASSWD flag is 0x10000
@@ -12,7 +17,23 @@ $user.UserFlags[0] = $user.UserFlags[0] -bor 0x10000
 $user.SetInfo()
 
 # add the users created to be added to the local administrators group.
-net localgroup Administrators /add "vagrant"
+net localgroup Administrators /add $userName
+
+# in unix this would be chown -R vagrant.vagrant /home/vagrant
+$account="\\"+$user.Name
+$homedir=$user.HomeDirectory
+$rights=[System.Security.AccessControl.FileSystemRights]::FullControl
+$inheritance=[System.Security.AccessControl.InheritanceFlags]"ContainerInherit,ObjectInherit"
+$propagation=[System.Security.AccessControl.PropagationFlags]::None
+$allowdeny=[System.Security.AccessControl.AccessControlType]::Allow
+
+$dirACE=New-Object System.Security.AccessControl.FileSystemAccessRule ($account,$rights,$inheritance,$propagation,$allowdeny)
+
+$dirACL=Get-Acl $homedir
+
+$dirACL.AddAccessRule($dirACE)
+
+Set-Acl $homedir $dirACL
 
 # configure WinRM
 Set-WSManQuickConfig -Force
@@ -39,7 +60,7 @@ c:/tmp/setup.exe /S /v/qn
 setx PATH "$env:path;c:\DeltaCopy" -m
 
 # copy the vagrant public key to this vagrant user
-$vssh=(Get-WmiObject -Class win32_userprofile -filter "localpath like '%vagrant%'" | select localpath).localpath + "\.ssh"
+$vssh=$userHome + "\.ssh"
 md $vssh\authorized_keys
 c:\DeltaCopy\chmod 700 $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys\vagrant.pub
