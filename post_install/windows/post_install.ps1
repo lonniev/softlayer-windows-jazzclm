@@ -69,9 +69,9 @@ setx PATH "$env:path;c:\DeltaCopy" -m
 # copy the vagrant public key to this vagrant user
 $vssh=$userHome + "\.ssh"
 md $vssh\authorized_keys
-c:\DeltaCopy\chmod 700 $vssh
+c:\DeltaCopy\chmod.exe -R 700 $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys\vagrant.pub
-c:\DeltaCopy\chmod 0600 $vssh\authorized_keys
+c:\DeltaCopy\chmod.exe -R 0600 $vssh\authorized_keys
 
 $owner = new-object system.security.principal.ntaccount("vagrant")
 get-childitem -literalpath $vssh -force -recurse | Get-Acl | foreach-object { $_.setOwner($owner) }
