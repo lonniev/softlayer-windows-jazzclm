@@ -47,14 +47,14 @@ Set-Service WinRM -startuptype "automatic"
 # obtain a sshd server for windows
 md c:\tmp
 iwr http://dl.bitvise.com/BvSshServer-Inst.exe -OutFile c:\tmp\BvSshServer-Inst.exe
-C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite
+C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite | Out-Host
 
 # configure it to sync with users' authorized_keys files
 $cmds = @'
 access.authKeysSync true
 commit
 '@
-$cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -i
+$cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -i | Out-Host
 
 # obtain an rsync and chmod client for windows
 # load the assembly required
@@ -62,8 +62,8 @@ $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -
 
 $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
-[System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" )
-c:/tmp/setup.exe /S /v/qn
+[System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" ) | Out-Host
+c:/tmp/setup.exe /S /v/qn | Out-Host
 setx PATH "$env:path;c:\DeltaCopy" -m
 
 # copy the vagrant public key to this vagrant user
