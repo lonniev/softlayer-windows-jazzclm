@@ -50,6 +50,9 @@ iwr http://dl.bitvise.com/BvSshServer-Inst.exe -OutFile c:\tmp\BvSshServer-Inst.
 C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite
 
 # obtain an rsync and chmod client for windows
+# load the assembly required
+[Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem"
+
 $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
 [System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" )
