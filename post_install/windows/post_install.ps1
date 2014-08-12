@@ -51,11 +51,8 @@ C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite
 
 # obtain an rsync and chmod client for windows
 $zipname = "c:\tmp\DeltaCopy.zip"
-$app = new-object -com shell.application
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
-$dest = $app.namespace("c:\tmp")
-$zip = $app.namespace($zipname)
-$dest.CopyHere($zip.items())
+[System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" )
 c:/tmp/setup.exe /S /v/qn
 setx PATH "$env:path;c:\DeltaCopy" -m
 
