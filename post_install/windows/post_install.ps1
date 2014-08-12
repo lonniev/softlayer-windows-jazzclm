@@ -54,7 +54,7 @@ $settings = @'
 access.authKeysSync true                                                                                                            
 commit
 '@
-$settings | "C:\Program Files\Bitvise SSH Server"\BssCfg.exe settings importText -i
+$settings | "C:\Program Files\Bitvise SSH Server\BssCfg.exe" settings importText -i
 
 # obtain an rsync and chmod client for windows
 # load the assembly required
