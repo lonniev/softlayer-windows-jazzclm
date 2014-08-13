@@ -7,7 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.guest    = :windows
-  config.vm.hostname = "sodiusalm2"
+  config.vm.hostname = "sodiusalm"
 
   #config.ssh.username                  = "vagrant"
   #config.ssh.password                  = "vagrant"
@@ -25,7 +25,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   
   # config.vm.synced_folder "../data", "/vagrant_data"
 
-  config.vm.define "sl-win-jazz-2" do |cci|
+  config.vm.define "sl-win-jazz" do |cci|
       
    #See http://docs.vagrantup.com/v2/vagrantfile/index.html
     cci.vm.box                        = "ju2wheels/SL_WIN_LATEST_64"
