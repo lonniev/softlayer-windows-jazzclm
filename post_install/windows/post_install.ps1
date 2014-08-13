@@ -80,4 +80,4 @@ Wait-Job -job $jobSsh | Receive-Job
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
 
-#shutdown -r -t 40 -c "server reboot to complete vagrant post_install." -d p:2:4
+shutdown -r -t 40 -c "server reboot to complete vagrant post_install." -d p:2:4
