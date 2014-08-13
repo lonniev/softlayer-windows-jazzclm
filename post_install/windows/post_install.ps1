@@ -24,7 +24,7 @@ New-Item -ItemType Directory -Force -Path c:\tmp
 $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
 [System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" ) | Out-Host
-c:/tmp/setup.exe /S /v/qn | Out-Host
+c:/tmp/setup.exe -S -V-qn | Out-Host
 setx PATH "$env:path;c:\DeltaCopy" -m
 
 # create the vagrant user with password vagrant
@@ -54,7 +54,9 @@ $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -
 # copy the vagrant public key to this vagrant user
 $vssh=$userHome + "\.ssh"
 New-Item -ItemType Directory -Force -Path $vssh
-iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys
+chmod -v 'a-rwx,u+rwx' $vssh
+iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys | Out-Host
+chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 
 # schedule a restart of the instance
 shutdown /r /t 30 /c "server reboot to complete vagrant post_install" /d p:2:4
