@@ -53,18 +53,18 @@ commit
 $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -i | Out-Host
 
 # wait for the install of the rsync and chmod tools to complete
-Receive-Job -job $jobIDC
+Wait-Job -job $jobIDC | Receive-Job
 
 # as the vagrant user, copy the vagrant public key to this vagrant user's authorized keys
 $jobSsh = Start-Job -ScriptBlock {
-$vssh=$env:HOMEPATH + "\.ssh"
+$vssh="c:\users\vagrant\.ssh"
 New-Item -ItemType Directory -Force -Path $vssh
 c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys | Out-Host
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 } -Credential $cred
 
-Receive-Job -job $jobSsh
+Wait-Job -job $jobSsh | Receive-Job
 
 # schedule a restart of the instance
 shutdown /r /t 30 /c "server reboot to complete vagrant post_install" /d p:2:4
