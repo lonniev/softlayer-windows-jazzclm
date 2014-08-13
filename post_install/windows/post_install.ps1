@@ -15,14 +15,14 @@ iwr http://wasp.codeplex.com/downloads/get/55849 -OutFile c:\tmp\WASP.zip
 Import-Module c:\tmp\WASP
 
 C:\tmp\MobaSSH_Server_Home_1.50.exe
-Start-Sleep -Milliseconds 1500
+Start-Sleep -Milliseconds 2000
 
-Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -Index 5 | Select-Control -Title "Install it now" | Send-Click
-Start-Sleep -Milliseconds 1500
-Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "Next" | Send-Click
-Start-Sleep -Milliseconds 1500
-Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "No" | Send-Click
-Start-Sleep -Milliseconds 1500
+Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -Index 5 | Select-Control -Title "Install it now" | Send-Click | Out-Host
+Start-Sleep -Milliseconds 2000
+Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "Next" | Send-Click | Out-Host
+Start-Sleep -Milliseconds 2000
+Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "No" | Send-Click | Out-Host
+Start-Sleep -Milliseconds 2000
 Select-Window -Title "MobaSSH Installer" | Remove-Window
 
 
