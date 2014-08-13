@@ -1,31 +1,3 @@
-# obtain a sshd server for windows
-md c:\tmp
-iwr http://mobassh.mobatek.net/MobaSSH_Server_Home_1.50.zip -OutFile c:\tmp\MobaSSH.zip
-
-# load the assembly required
-[Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
-
-$zipname = "c:\tmp\MobaSSH.zip"
-[System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" ) | Out-Host
-
-# painfully drive the gui
-iwr http://wasp.codeplex.com/downloads/get/55849 -OutFile c:\tmp\WASP.zip
-
-[System.IO.Compression.ZipFile]::ExtractToDirectory( "c:\tmp\WASP.zip", "c:\tmp")
-Import-Module c:\tmp\WASP
-
-C:\tmp\MobaSSH_Server_Home_1.50.exe
-Start-Sleep -Milliseconds 2000
-
-Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -Index 5 | Select-Control -Title "Install it now" | Send-Click | Out-Host
-Start-Sleep -Milliseconds 2000
-Select-Window -ActiveWindow | Select-Control -title "Next" | Send-Click | Out-Host
-Start-Sleep -Milliseconds 2000
-Select-Window -ActiveWindow | Select-Control -title "No" | Send-Click | Out-Host
-Start-Sleep -Milliseconds 2000
-Select-Window -Title "MobaSSH Installer" | Remove-Window
-
-
 # get a reference to the local OS configurator
 $computer = [ADSI]"WinNT://localhost"
 
@@ -36,6 +8,8 @@ md $userHome
 $user = $computer.Create("User",$userName )
 $user.setpassword( $userName )
 $user.put("description", "Vagrant User")
+$user.put("homedirectory", $userHome)
+$user.put("profile", $userHome)
 $user.SetInfo()
 
 # ADS_UF_DONT_EXPIRE_PASSWD flag is 0x10000
@@ -45,10 +19,21 @@ $user.SetInfo()
 # add the users created to be added to the local administrators group.
 net localgroup Administrators /add $userName
 
-# copy the vagrant public key to this vagrant user
-$vssh=$userHome + "\.ssh"
-md $vssh\authorized_keys
-iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys\vagrant.pub
+# in unix this would be chown -R vagrant.vagrant /home/vagrant
+$account="\\"+$user.Name
+$homedir=$user.HomeDirectory
+$rights=[System.Security.AccessControl.FileSystemRights]::FullControl
+$inheritance=[System.Security.AccessControl.InheritanceFlags]"ContainerInherit,ObjectInherit"
+$propagation=[System.Security.AccessControl.PropagationFlags]::None
+$allowdeny=[System.Security.AccessControl.AccessControlType]::Allow
+
+$dirACE=New-Object System.Security.AccessControl.FileSystemAccessRule ($account,$rights,$inheritance,$propagation,$allowdeny)
+
+$dirACL=Get-Acl $homedir
+
+$dirACL.AddAccessRule($dirACE)
+
+Set-Acl $homedir $dirACL
 
 # configure WinRM
 Set-WSManQuickConfig -Force
@@ -59,5 +44,37 @@ Set-Item WSMAN:\LocalHost\Client\Auth\Basic -Value $true
 
 Set-Service WinRM -startuptype "automatic"
 
+# obtain a sshd server for windows
+md c:\tmp
+iwr http://dl.bitvise.com/BvSshServer-Inst.exe -OutFile c:\tmp\BvSshServer-Inst.exe
+C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite | Out-Host
+
+# configure it to sync with users' authorized_keys files
+$cmds = @'
+access.authKeysSync true
+commit
+'@
+$cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -i | Out-Host
+
+# obtain an rsync and chmod client for windows
+# load the assembly required
+[Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
+
+$zipname = "c:\tmp\DeltaCopy.zip"
+iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
+[System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" ) | Out-Host
+c:/tmp/setup.exe /S /v/qn | Out-Host
+setx PATH "$env:path;c:\DeltaCopy" -m
+
+# copy the vagrant public key to this vagrant user
+$vssh=$userHome + "\.ssh"
+md $vssh\authorized_keys
+c:\DeltaCopy\chmod.exe -R 700 $vssh
+iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys\vagrant.pub
+c:\DeltaCopy\chmod.exe -R 0600 $vssh\authorized_keys
+
+$owner = new-object system.security.principal.ntaccount("vagrant")
+get-childitem -literalpath $vssh -force -recurse | Get-Acl | foreach-object { $_.setOwner($owner) }
+
 # schedule a restart of the instance
-#shutdown /r /t 10 /c "server reboot to complete vagrant post_install" /d p:2:4
+shutdown /r /t 10 /c "server reboot to complete vagrant post_install" /d p:2:4
