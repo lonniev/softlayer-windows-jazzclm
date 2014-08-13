@@ -14,9 +14,9 @@ iwr http://wasp.codeplex.com/downloads/get/55849 -OutFile c:\tmp\WASP.zip
 [System.IO.Compression.ZipFile]::ExtractToDirectory( "c:\tmp\WASP.zip", "c:\tmp")
 Import-Module c:\tmp\WASP
 
-C:\tmp\MobaSSH_Server_Home_1.50.exe | Out-Host
+C:\tmp\MobaSSH_Server_Home_1.50.exe
 
-Select-Window -Title "MobaSSH Installer" | Send-Keys "{ENTER}"
+Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -Index 5 | Select-Control -Title "Install it now" | Send-Click
 Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "Next" | Send-Click
 Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "No" | Send-Click
 Select-Window -Title "MobaSSH Installer" | Remove-Window
