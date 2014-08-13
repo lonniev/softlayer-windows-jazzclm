@@ -19,9 +19,9 @@ Start-Sleep -Milliseconds 2000
 
 Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -Index 5 | Select-Control -Title "Install it now" | Send-Click | Out-Host
 Start-Sleep -Milliseconds 2000
-Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "Next" | Send-Click | Out-Host
+Select-Window -ActiveWindow | Select-Control -title "Next" | Send-Click | Out-Host
 Start-Sleep -Milliseconds 2000
-Select-Window -Title "MobaSSH Installer" | Select-ChildWindow | Select-Control -title "No" | Send-Click | Out-Host
+Select-Window -ActiveWindow | Select-Control -title "No" | Send-Click | Out-Host
 Start-Sleep -Milliseconds 2000
 Select-Window -Title "MobaSSH Installer" | Remove-Window
 
