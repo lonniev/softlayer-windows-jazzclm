@@ -7,24 +7,25 @@ Set-Item WSMAN:\LocalHost\Client\Auth\Basic -Value $true
 
 Set-Service WinRM -startuptype "automatic"
 
-# get a reference to the local OS configurator
-$computer = [ADSI]"WinNT://localhost"
-
 # create the vagrant user with password vagrant
 $userName = "vagrant"
-$userHome = "c:\users\" + $userName
-md $userHome
-$user = $computer.Create("User", $userName )
-$user.setpassword( $userName )
-$user.put("description", "Vagrant User")
-$user.SetInfo()
-
-# ADS_UF_DONT_EXPIRE_PASSWD flag is 0x10000
-$user.UserFlags[0] = $user.UserFlags[0] -bor 0x10000
-$user.SetInfo()
+$userHome = "c:\Users\" + $userName
+net user $userName $userName /add /expires:never /comment:"Vagrant User"
 
 # add the user created to be added to the local administrators group.
 net localgroup Administrators /add $userName
+
+# Helper Functions
+# ----------------
+function New-Credential($u,$p) {
+    $secpasswd = ConvertTo-SecureString $p -AsPlainText -Force
+    return New-Object System.Management.Automation.PSCredential ($u, $secpasswd)
+}
+
+# run a process as the vagrant user to force creation of the user home and profile paths
+# -----------
+$cred = New-Credential $userName $userName
+(Start-Process whoami.exe -Credential $cred)
 
 # obtain a sshd server for windows
 md c:\tmp
