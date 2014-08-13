@@ -12,7 +12,8 @@ function New-Credential($u,$p) {
 Set-WSManQuickConfig -Force
 
 Set-Item WSMAN:\LocalHost\MaxTimeoutms -Value "1800000"
-Set-Item WSMAN:\LocalHost\Client\AllowUnencrypted -Value $true
+Set-Item WSMAN:\LocalHost\Service\AllowUnencrypted -Value $true
+Set-Item WSMAN:\LocalHost\Service\Auth\Basic -Value $true
 Set-Item WSMAN:\LocalHost\Client\Auth\Basic -Value $true
 
 Set-Service WinRM -startuptype "automatic"
@@ -24,12 +25,12 @@ New-Item -ItemType Directory -Force -Path c:\tmp
 $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
 [System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" ) | Out-Host
-c:/tmp/setup.exe -S -V-qn | Out-Host
+
+$jobIDC = Start-Job -scriptBlock { c:/tmp/setup.exe -S -V-qn }
 setx PATH "$env:path;c:\DeltaCopy" -m
 
 # create the vagrant user with password vagrant
 $userName = "vagrant"
-$userHome = "c:\Users\" + $userName
 net user $userName $userName /add /expires:never /comment:"Vagrant User"
 
 # add the user created to be added to the local administrators group.
@@ -51,12 +52,19 @@ commit
 '@
 $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -i | Out-Host
 
-# copy the vagrant public key to this vagrant user
-$vssh=$userHome + "\.ssh"
+# wait for the install of the rsync and chmod tools to complete
+Receive-Job -job $jobIDC
+
+# as the vagrant user, copy the vagrant public key to this vagrant user's authorized keys
+$jobSsh = Start-Job -ScriptBlock {
+$vssh=$env:HOMEPATH + "\.ssh"
 New-Item -ItemType Directory -Force -Path $vssh
-chmod -v 'a-rwx,u+rwx' $vssh
+c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys | Out-Host
-chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
+c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
+} -Credential $cred
+
+Receive-Job -job $jobSsh
 
 # schedule a restart of the instance
 shutdown /r /t 30 /c "server reboot to complete vagrant post_install" /d p:2:4
