@@ -85,7 +85,7 @@ Write-Progress -Activity "Vagrant Post Install" -Status "Obtaining vagrant publi
 Write-Host -ForegroundColor Green "Obtaining vagrant public key..."
 
 @'
-$vssh=$env:HOMEPATH + "\.ssh"
+$vssh="c:\users\vagrant\.ssh"
 if ( -Not (Test-Path $vssh\authorized_keys) )
 {
 New-Item -ItemType Directory -Force -Path $vssh
