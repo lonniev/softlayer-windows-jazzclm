@@ -29,7 +29,7 @@ $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
 [System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" )
 
-c:/tmp/setup.exe -S -V-qn
+c:\tmp\setup.exe -S -V-qn
 setx PATH "$env:path;c:\DeltaCopy" -m
 }
 
