@@ -45,7 +45,7 @@ net localgroup Administrators /add $userName
 # run a process as the vagrant user to force creation of the user home and profile paths
 # -----------
 $cred = New-Credential $userName $userName
-Start-Process -Wait -WindowStyle Hidden whoami.exe -Credential $cred
+Start-Process -Wait -NoNewWindow whoami.exe -Credential $cred
 
 # obtain a sshd server for windows
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and installing Sshd Server..." -PercentComplete 40 -SecondsRemaining 70
