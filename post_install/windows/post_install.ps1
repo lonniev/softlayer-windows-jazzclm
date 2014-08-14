@@ -50,8 +50,10 @@ Start-Process -Wait -NoNewWindow whoami.exe -Credential $cred
 # obtain a sshd server for windows
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and installing Sshd Server..." -PercentComplete 40 -SecondsRemaining 70
 
+Invoke-Command -ScriptBlock {
 iwr http://dl.bitvise.com/BvSshServer-Inst.exe -OutFile c:\tmp\BvSshServer-Inst.exe
 C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite
+}
 
 # configure it to sync with users' authorized_keys files
 $cmds = @'
@@ -75,7 +77,7 @@ c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
 
 Start-Sleep 10
-Write-Host -ForegroundColor "Done. Bye..."
+Write-Host -ForegroundColor Green "Done. Bye..."
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 90 -SecondsRemaining 5
 
 shutdown -r -t 5 -c "server reboot to complete vagrant post_install." -d p:2:4
