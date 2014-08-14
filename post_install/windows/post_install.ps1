@@ -63,7 +63,7 @@ $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -
 # as the vagrant user, copy the vagrant public key to this vagrant user's authorized keys
 Write-Progress -Activity "Vagrant Post Install" -Status "Obtaining vagrant public key..." -PercentComplete 50 -SecondsRemaining 50
 
-Invoke-Command -ScriptBlock {
+Invoke-Command -ComputerName localhost -ScriptBlock {
 $vssh="c:\users\vagrant\.ssh"
 New-Item -ItemType Directory -Force -Path $vssh
 c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
