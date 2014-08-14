@@ -1,4 +1,5 @@
 Write-Progress -Activity "Vagrant Post Install" -Status "Enabling WinRM..." -PercentComplete 0 -SecondsRemaining 110
+Write-Host -ForegroundColor Green "Enabling WinRM..."
 
 # Helper Functions
 # ----------------
@@ -14,10 +15,14 @@ Set-Item WSMAN:\LocalHost\MaxTimeoutms -Value "1800000"
 Set-Item WSMAN:\LocalHost\Service\AllowUnencrypted -Value $true
 Set-Item WSMAN:\LocalHost\Service\Auth\Basic -Value $true
 Set-Item WSMAN:\LocalHost\Client\Auth\Basic -Value $true
+Set-Item WSMan:\Localhost\Client\TrustedHosts -Value "*" -Force
 
 Set-Service WinRM -startuptype "automatic"
 
+Enable-PSRemoting -force
+
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and unzipping DeltaCopy..." -PercentComplete 20 -SecondsRemaining 100
+Write-Host -ForegroundColor Green "Downloading and unzipping DeltaCopy..."
 
 # make a space for install files
 New-Item -ItemType Directory -Force -Path c:\tmp
@@ -29,12 +34,15 @@ $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
 [System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" )
 
+Write-Host -ForegroundColor Green "Installing and pathing DeltaCopy..."
+
 c:\tmp\setup.exe -S -V-qn
 setx PATH "$env:path;c:\DeltaCopy" -m
 }
 
 # create the vagrant user with password vagrant
 Write-Progress -Activity "Vagrant Post Install" -Status "Creating vagrant Administrator..." -PercentComplete 30 -SecondsRemaining 80
+Write-Host -ForegroundColor Green "Creating vagrant Administrator..."
 
 $userName = "vagrant"
 net user $userName $userName /add /expires:never /comment:"Vagrant User"
@@ -49,6 +57,7 @@ Start-Process -Wait -NoNewWindow whoami.exe -Credential $cred
 
 # obtain a sshd server for windows
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and installing Sshd Server..." -PercentComplete 40 -SecondsRemaining 70
+Write-Host -ForegroundColor Green "Downloading and installing Sshd Server..."
 
 Invoke-Command -ScriptBlock {
 iwr http://dl.bitvise.com/BvSshServer-Inst.exe -OutFile c:\tmp\BvSshServer-Inst.exe
@@ -64,6 +73,7 @@ $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -
 
 # as the vagrant user, copy the vagrant public key to this vagrant user's authorized keys
 Write-Progress -Activity "Vagrant Post Install" -Status "Obtaining vagrant public key..." -PercentComplete 50 -SecondsRemaining 50
+Write-Host -ForegroundColor Green "Obtaining vagrant public key..."
 
 $jobSsh = Start-Job -ScriptBlock {
 $vssh="c:\users\vagrant\.ssh"
@@ -71,11 +81,13 @@ New-Item -ItemType Directory -Force -Path $vssh
 c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
+Write-Host -ForegroundColor Green "Created $vssh\authorized_keys."
 } -Credential $cred
 Wait-Job -Job $jobSsh | Receive-Job
 
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
+Write-Host -ForegroundColor Green "Scheduling restart..."
 
 Start-Sleep 10
 Write-Host -ForegroundColor Green "Done. Bye..."
