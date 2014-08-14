@@ -45,7 +45,7 @@ net localgroup Administrators /add $userName
 # run a process as the vagrant user to force creation of the user home and profile paths
 # -----------
 $cred = New-Credential $userName $userName
-Start-Process -Wait -NoNewWindow whoami.exe -Credential $cred
+Start-Process -Wait -NoNewWindow -WindowStyle Hidden whoami.exe -Credential $cred
 
 # obtain a sshd server for windows
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and installing Sshd Server..." -PercentComplete 40 -SecondsRemaining 70
@@ -65,13 +65,14 @@ $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -
 # as the vagrant user, copy the vagrant public key to this vagrant user's authorized keys
 Write-Progress -Activity "Vagrant Post Install" -Status "Obtaining vagrant public key..." -PercentComplete 50 -SecondsRemaining 50
 
-Invoke-Command -ComputerName localhost -ScriptBlock {
+$jobSsh = Start-Job -ScriptBlock {
 $vssh="c:\users\vagrant\.ssh"
 New-Item -ItemType Directory -Force -Path $vssh
 c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 } -Credential $cred
+Wait-Job -Job $jobSsh
 
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
