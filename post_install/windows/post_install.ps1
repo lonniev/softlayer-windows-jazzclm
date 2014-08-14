@@ -1,6 +1,4 @@
-Write-Progress -Activity "Vagrant Post Install" -Status "Assembly Loading..." -PercentComplete 0 -SecondsRemaining 120 
-# load any assemblies required
-[Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
+Write-Progress -Activity "Vagrant Post Install" -Status "Enabling WinRM..." -PercentComplete 0 -SecondsRemaining 110
 
 # Helper Functions
 # ----------------
@@ -10,8 +8,6 @@ function New-Credential($u,$p) {
 }
 
 # configure WinRM
-Write-Progress -Activity "Vagrant Post Install" -Status "Enabling WinRM..." -PercentComplete 10 -SecondsRemaining 110
-
 Set-WSManQuickConfig -Force
 
 Set-Item WSMAN:\LocalHost\MaxTimeoutms -Value "1800000"
@@ -27,12 +23,15 @@ Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and unzippi
 New-Item -ItemType Directory -Force -Path c:\tmp
 
 # obtain an rsync and chmod client for windows
+Invoke-Command -ScriptBlock {
+[Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
 $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
 [System.IO.Compression.ZipFile]::ExtractToDirectory( $zipname, "c:\tmp" )
 
-$jobIDC = Start-Job -scriptBlock { c:/tmp/setup.exe -S -V-qn }
+c:/tmp/setup.exe -S -V-qn
 setx PATH "$env:path;c:\DeltaCopy" -m
+}
 
 # create the vagrant user with password vagrant
 Write-Progress -Activity "Vagrant Post Install" -Status "Creating vagrant Administrator..." -PercentComplete 30 -SecondsRemaining 80
@@ -46,7 +45,7 @@ net localgroup Administrators /add $userName
 # run a process as the vagrant user to force creation of the user home and profile paths
 # -----------
 $cred = New-Credential $userName $userName
-(Start-Process whoami.exe -Credential $cred)
+Start-Process -Wait -NoNewWindow whoami.exe -Credential $cred
 
 # obtain a sshd server for windows
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and installing Sshd Server..." -PercentComplete 40 -SecondsRemaining 70
@@ -61,13 +60,10 @@ commit
 '@
 $cmds | C:\"Program Files"\"Bitvise SSH Server"\BssCfg.exe settings importText -i 
 
-# wait for the install of the rsync and chmod tools to complete
-Wait-Job -job $jobIDC | Receive-Job
-
 # as the vagrant user, copy the vagrant public key to this vagrant user's authorized keys
 Write-Progress -Activity "Vagrant Post Install" -Status "Obtaining vagrant public key..." -PercentComplete 50 -SecondsRemaining 50
 
-$jobSsh = Start-Job -ScriptBlock {
+Invoke-Command -ScriptBlock {
 $vssh="c:\users\vagrant\.ssh"
 New-Item -ItemType Directory -Force -Path $vssh
 c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
@@ -75,9 +71,9 @@ iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $v
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 } -Credential $cred
 
-Wait-Job -job $jobSsh | Receive-Job
-
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
 
 shutdown -r -t 40 -c "server reboot to complete vagrant post_install." -d p:2:4
+
+Write-Host -ForegroundColor "Done. Bye..."
