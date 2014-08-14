@@ -74,7 +74,8 @@ c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
 
-Start-Sleep 120
-shutdown -r -t 5 -c "server reboot to complete vagrant post_install." -d p:2:4
-
+Start-Sleep 10
 Write-Host -ForegroundColor "Done. Bye..."
+Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 90 -SecondsRemaining 5
+
+shutdown -r -t 5 -c "server reboot to complete vagrant post_install." -d p:2:4
