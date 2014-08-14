@@ -72,7 +72,7 @@ c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 } -Credential $cred
-Wait-Job -Job $jobSsh
+Wait-Job -Job $jobSsh | Receive-Job
 
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
