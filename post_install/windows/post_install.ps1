@@ -29,6 +29,8 @@ New-Item -ItemType Directory -Force -Path c:\tmp
 
 # obtain an rsync and chmod client for windows
 Invoke-Command -ScriptBlock {
+if ( -Not (Test-Path c:\DeltaCopy\rsync.exe) )
+{
 [Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
 $zipname = "c:\tmp\DeltaCopy.zip"
 iwr http://www.aboutmyx.com/files/DeltaCopy.zip -OutFile $zipname
@@ -38,6 +40,7 @@ Write-Host -ForegroundColor Green "Installing and pathing DeltaCopy..."
 
 c:\tmp\setup.exe -S -V-qn
 setx PATH "$env:path;c:\DeltaCopy" -m
+}
 }
 
 $userName = "vagrant"
@@ -59,7 +62,7 @@ $cred = New-Credential $userName $userName
 Start-Process -Wait -NoNewWindow whoami.exe -Credential $cred
 
 # obtain a sshd server for windows
-if ( -Not (Test-Path C:\"Program Files"\"Bitvise SSH Server"))
+if ( -Not (Test-Path C:\"Program Files"\"Bitvise SSH Server") )
 {
 Write-Progress -Activity "Vagrant Post Install" -Status "Downloading and installing Sshd Server..." -PercentComplete 40 -SecondsRemaining 70
 Write-Host -ForegroundColor Green "Downloading and installing Sshd Server..."
@@ -70,7 +73,7 @@ C:\tmp\BvSshServer-Inst.exe -acceptEULA -startService -defaultSite
 }
 }
 
-# configure it to sync with users' authorized_keys files
+# configure WinSshd to sync with users' authorized_keys files
 $cmds = @'
 access.authKeysSync true
 commit
@@ -90,6 +93,7 @@ c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 Write-Host -ForegroundColor Green "Created $vssh\authorized_keys."
+Start-Sleep 120
 }
 '@ | Out-File c:\tmp\get_key.ps1
 
