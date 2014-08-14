@@ -103,4 +103,4 @@ Start-Sleep 10
 Write-Host -ForegroundColor Green "Done. Bye..."
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 90 -SecondsRemaining 5
 
-shutdown -r -t 5 -c "server reboot to complete vagrant post_install." -d p:2:4
+#shutdown -r -t 5 -c "server reboot to complete vagrant post_install." -d p:2:4
