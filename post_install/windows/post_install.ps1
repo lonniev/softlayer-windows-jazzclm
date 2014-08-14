@@ -93,7 +93,7 @@ Write-Host -ForegroundColor Green "Created $vssh\authorized_keys."
 }
 '@ | Out-File c:\tmp\get_key.ps1
 
-Start-Process -FilePath c:\tmp\get_key.ps1 -Wait -NoNewWindow -Credential $cred
+Start-Process powershell.exe -ArgumentList "-file c:\tmp\get_key.ps1" -Wait -NoNewWindow -Credential $cred
 
 # schedule a restart of the instance
 Write-Progress -Activity "Vagrant Post Install" -Status "Scheduling restart..." -PercentComplete 80 -SecondsRemaining 40
