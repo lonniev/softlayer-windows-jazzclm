@@ -93,7 +93,6 @@ c:\DeltaCopy\chmod -v 'a-rwx,u+rwx' $vssh
 iwr https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -OutFile $vssh\authorized_keys
 c:\DeltaCopy\chmod -v 'a-rwx,u+rw' $vssh\authorized_keys
 Write-Host -ForegroundColor Green "Created $vssh\authorized_keys."
-Start-Sleep 120
 }
 '@ | Out-File c:\tmp\get_key.ps1
 
