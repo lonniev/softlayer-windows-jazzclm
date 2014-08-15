@@ -44,7 +44,7 @@ setx PATH "$env:path;c:\DeltaCopy" -m
 }
 
 $userName = "vagrant"
-if ( -Not ( Get-WmiObject -Class Win32_UserAccount -Namespace "root\cimv2" -Filter "LocalAccount='$True'" -ErrorAction Stop | Select Name | Select-String -Quiet -SimpleMatch "vagrant" ) )
+if ( -Not ( Test-Path "c:\users\vagrant" ) )
 {
 # create the vagrant user with password vagrant
 Write-Progress -Activity "Vagrant Post Install" -Status "Creating vagrant Administrator..." -PercentComplete 30 -SecondsRemaining 80
